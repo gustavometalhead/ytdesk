@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supabase App Pro</title>
+</head>
+<body>
+
+<div id="app">
+  <h1>App Supabase</h1>
+  <button id="loginBtn">Login</button>
+  <button id="logoutBtn">Logout</button>
+  <pre id="output"></pre>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+  // =========================
+  // CONFIG (PRO: CENTRALIZADA)
+  // =========================
+  const CONFIG = {
+    url: 'https://btfqqxjzojnardhnnuer.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0ZnFxeGp6b2puYXJkaG5udWVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNTMzODksImV4cCI6MjA5MDYyOTM4OX0.WpMRrwln3KMXunHA_sRtEsEVEOhj56ZU-Jb1uBjPkUQ'
+  };
+
+  // =========================
+  // INIT CLIENT
+  // =========================
+  const supabase = createClient(CONFIG.url, CONFIG.anonKey);
+
+  // =========================
+  // UI ELEMENTS
+  // =========================
+  const output = document.getElementById('output');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  // =========================
+  // AUTH FUNCTIONS
+  // =========================
+  async function login() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google'
+    });
+
+    if (error) {
+      log('❌ Login error: ' + error.message);
+    }
+  }
+
+  async function logout() {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      log('❌ Logout error: ' + error.message);
+    }
+  }
+
+  // =========================
+  // SESSION HANDLING
+  // =========================
+  async function checkSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session) {
+      log('✅ Usuario logueado: ' + session.user.email);
+    } else {
+      log('⚠️ No hay sesión activa');
+    }
+  }
+
+  // =========================
+  // EVENT LISTENERS
+  // =========================
+  loginBtn.addEventListener('click', login);
+  logoutBtn.addEventListener('click', logout);
+
+  supabase.auth.onAuthStateChange((event, session) => {
+    log('🔄 Evento auth: ' + event);
+
+    if (session) {
+      log('👤 Usuario: ' + session.user.email);
+    }
+  });
+
+  // =========================
+  // UTILS
+  // =========================
+  function log(msg) {
+    output.textContent += msg + '\n';
+    console.log(msg);
+  }
+
+  // =========================
+  // INIT
+  // =========================
+  checkSession();
+
+</script>
+
+</body>
+</html>
